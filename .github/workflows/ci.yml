@@ -33,7 +33,7 @@ jobs:
 
       - name: Run ingestion pipeline
         run: |
-          python src/ingest.py --backend sqlite
+          python src/ingest_kth.py --data-dir data/raw/kth_dns --backend sqlite
 
       - name: Run ML pipeline
         run: |
