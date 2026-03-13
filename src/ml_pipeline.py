@@ -293,6 +293,7 @@ def generate_ml_figures(region_results, retau_results, anomaly_results):
         "axes.grid": True, "grid.alpha": 0.25,
     })
     OUTPUT = "data/processed"
+    os.makedirs(OUTPUT, exist_ok=True)
 
     # Fig 11: Region classification confusion matrix + importance
     fig = plt.figure(figsize=(14, 5.5))
