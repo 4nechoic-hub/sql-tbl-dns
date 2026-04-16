@@ -23,7 +23,7 @@ It is designed to demonstrate more than notebook-based analysis:
 - relational schema design for simulation metadata, velocity profiles, and turbulence budgets
 - SQL-based feature engineering for downstream ML tasks
 - supervised and unsupervised machine learning on engineered features
-- reproducible testing and CI automation
+- reproducible testing and CI automation across SQLite and PostgreSQL
 
 ## What I built
 
@@ -36,7 +36,7 @@ My original work in this repository includes:
 - SQL-first feature engineering in `src/feature_engineering.py`
 - the ML workflow in `src/ml_pipeline.py`
 - reporting and figure generation in `src/generate_figures.py`
-- automated tests and CI setup
+- automated tests, Docker setup, and CI configuration
 
 ## Why this is a SQL-first project
 
@@ -83,15 +83,26 @@ The pipeline currently includes three analysis tasks:
 
 This makes the project useful as a portfolio piece for SQL, data engineering, analytics engineering, scientific Python, and applied machine learning roles.
 
+## Selected outputs
+
+<p align="center">
+  <img src="./docs/assets/figures/fig01_mean_velocity.png" width="32%" alt="Mean velocity profiles" />
+  <img src="./docs/assets/figures/fig04_tke_budget.png" width="32%" alt="TKE budget" />
+  <img src="./docs/assets/figures/fig10_3d_surface.png" width="32%" alt="3D surface" />
+</p>
+
+These figures are generated directly from the pipeline after ingestion, feature engineering, and model execution. The README gallery is intentionally small; the full figure set can be reproduced locally.
+
 ## Repository structure
 
 ```text
 sql-tbl-dns/
 ├── .github/workflows/          # CI pipeline
 ├── data/raw/kth_dns/           # Raw DNS input files
+├── docs/assets/figures/        # Curated README figure gallery
 ├── sql/
 │   ├── queries/                # Exploratory and feature SQL
-│   └── schema/                 # Table creation SQL
+│   └── schema/                 # SQLite and PostgreSQL schema files
 ├── src/
 │   ├── config.py
 │   ├── db.py
@@ -134,20 +145,19 @@ pip install -r requirements.txt
 
 python src/ingest_kth.py --data-dir data/raw/kth_dns --backend sqlite
 python src/ml_pipeline.py --backend sqlite
-python src/generate_figures.py
+python src/generate_figures.py --backend sqlite --db-path data/tbl_analytics.db
 ```
 
 ### PostgreSQL run
 
 ```bash
 cp .env.example .env
-docker compose up -d
+docker compose up -d postgres
 
 python src/ingest_kth.py --data-dir data/raw/kth_dns --backend postgresql
 python src/ml_pipeline.py --backend postgresql
+python src/generate_figures.py --backend postgresql --output-dir data/processed_postgres
 ```
-
-> Note: `src/generate_figures.py` currently opens the SQLite database path directly (`data/tbl_analytics.db`), so reporting is aligned with the SQLite path unless that script is updated.
 
 ## Testing
 
@@ -155,7 +165,7 @@ python src/ml_pipeline.py --backend postgresql
 pytest tests/ -v --tb=short
 ```
 
-GitHub Actions runs the CI workflow on pushes and pull requests to `main`.
+GitHub Actions runs a SQLite test matrix and a PostgreSQL smoke test on pushes and pull requests to `main`.
 
 ## Dataset provenance and attribution
 
@@ -173,10 +183,10 @@ See `DATA_PROVENANCE.md` for the dataset note in repository form.
 
 ## Current limitations
 
-- figure generation currently assumes the SQLite database path
-- the `Re_tau` regression task is small-sample because only 10 Reynolds-number conditions are available
-- the boundary-layer region labels are rule-based labels derived from wall-normal thresholds
-- SQLite is the most direct local execution path today, even though both backends are configured in the project
+- the `Re_tau` regression task is intentionally small-sample because the dataset contains 10 Reynolds-number conditions
+- the boundary-layer region labels are rule-based surrogate labels derived from wall-normal thresholds rather than external annotations
+- the CI workflow is a smoke test for correctness and reproducibility, not a benchmarking suite
+- the README gallery shows selected outputs only; generated figures are not versioned in full by default
 
 ## References
 
