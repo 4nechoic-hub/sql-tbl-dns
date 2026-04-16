@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you use this repository, please cite the software below and also cite the upstream KTH DNS paper for the data."
+title: "Turbulent Boundary Layer SQL Analytics Pipeline"
+type: software
+authors:
+  - family-names: "Zhang"
+    given-names: "Tingyi"
+repository-code: "https://github.com/4nechoic-hub/sql-tbl-dns"
+url: "https://github.com/4nechoic-hub/sql-tbl-dns"
+license: "MIT"
+abstract: "SQL-first data engineering and machine learning pipeline for turbulent boundary layer analysis using KTH DNS profile and budget data."
+keywords:
+  - SQL
+  - data engineering
+  - machine learning
+  - turbulence
+  - direct numerical simulation
+  - PostgreSQL
+  - SQLite

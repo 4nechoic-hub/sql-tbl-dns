@@ -1,0 +1,73 @@
+<svg width="1280" height="640" viewBox="0 0 1280 640" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">SQL-first turbulent boundary layer analytics pipeline</title>
+  <desc id="desc">Hero banner for a portfolio project showing SQL, data engineering, machine learning, and KTH DNS turbulence data.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1280" y2="640" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#08111F"/>
+      <stop offset="0.5" stop-color="#0B1F35"/>
+      <stop offset="1" stop-color="#12314F"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#60A5FA"/>
+      <stop offset="0.5" stop-color="#34D399"/>
+      <stop offset="1" stop-color="#F59E0B"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="18" flood-color="#020617" flood-opacity="0.45"/>
+    </filter>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" stroke="#9FB3C820" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <rect width="1280" height="640" fill="url(#bg)"/>
+  <rect width="1280" height="640" fill="url(#grid)"/>
+
+  <circle cx="1110" cy="120" r="190" fill="#1D4ED822"/>
+  <circle cx="1185" cy="510" r="170" fill="#10B9811A"/>
+  <circle cx="160" cy="560" r="140" fill="#F59E0B12"/>
+
+  <g opacity="0.9">
+    <rect x="74" y="70" rx="18" ry="18" width="154" height="40" fill="#0F172A" stroke="#3B82F6"/>
+    <text x="151" y="96" text-anchor="middle" fill="#D7E7FF" font-size="18" font-family="Inter, Segoe UI, Arial, sans-serif" font-weight="700">PORTFOLIO PROJECT</text>
+  </g>
+
+  <text x="74" y="180" fill="#F8FAFC" font-size="68" font-family="Inter, Segoe UI, Arial, sans-serif" font-weight="800">SQL • Data Engineering • ML</text>
+  <text x="74" y="252" fill="#E2E8F0" font-size="34" font-family="Inter, Segoe UI, Arial, sans-serif" font-weight="700">Turbulent Boundary Layer Analytics Pipeline on Real KTH DNS Data</text>
+
+  <text x="74" y="318" fill="#C7D2E0" font-size="24" font-family="Inter, Segoe UI, Arial, sans-serif" font-weight="500">
+    Ingest raw .prof files → design relational tables → engineer turbulence features in SQL → train models → write results back to the database
+  </text>
+
+  <g filter="url(#shadow)">
+    <rect x="74" y="370" rx="24" ry="24" width="322" height="146" fill="#0B1322" stroke="#1E3A5F"/>
+    <rect x="74" y="370" rx="24" ry="24" width="322" height="8" fill="url(#accent)"/>
+    <text x="104" y="424" fill="#9CC8FF" font-size="20" font-family="Inter, Segoe UI, Arial, sans-serif" font-weight="700">SQL-FIRST FEATURE ENGINEERING</text>
+    <text x="104" y="467" fill="#F8FAFC" font-size="38" font-family="Inter, Segoe UI, Arial, sans-serif" font-weight="800">CTEs • JOINs • Windows</text>
+    <text x="104" y="502" fill="#B9C7D8" font-size="20" font-family="Inter, Segoe UI, Arial, sans-serif">Analytical SQL at the core of the pipeline</text>
+
+    <rect x="429" y="370" rx="24" ry="24" width="322" height="146" fill="#0B1322" stroke="#1E3A5F"/>
+    <rect x="429" y="370" rx="24" ry="24" width="322" height="8" fill="url(#accent)"/>
+    <text x="459" y="424" fill="#9CC8FF" font-size="20" font-family="Inter, Segoe UI, Arial, sans-serif" font-weight="700">REAL SCIENTIFIC DATA</text>
+    <text x="459" y="467" fill="#F8FAFC" font-size="38" font-family="Inter, Segoe UI, Arial, sans-serif" font-weight="800">30,780 DNS Points</text>
+    <text x="459" y="502" fill="#B9C7D8" font-size="20" font-family="Inter, Segoe UI, Arial, sans-serif">Velocity, TKE budgets, Reynolds-stress budgets</text>
+
+    <rect x="784" y="370" rx="24" ry="24" width="422" height="146" fill="#0B1322" stroke="#1E3A5F"/>
+    <rect x="784" y="370" rx="24" ry="24" width="422" height="8" fill="url(#accent)"/>
+    <text x="814" y="424" fill="#9CC8FF" font-size="20" font-family="Inter, Segoe UI, Arial, sans-serif" font-weight="700">END-TO-END STACK</text>
+    <text x="814" y="467" fill="#F8FAFC" font-size="38" font-family="Inter, Segoe UI, Arial, sans-serif" font-weight="800">PostgreSQL | SQLite | scikit-learn</text>
+    <text x="814" y="502" fill="#B9C7D8" font-size="20" font-family="Inter, Segoe UI, Arial, sans-serif">Tests, CI, figures, model registry, predictions table</text>
+  </g>
+
+  <g opacity="0.95">
+    <rect x="905" y="86" rx="20" ry="20" width="250" height="154" fill="#0B1322CC" stroke="#29405E"/>
+    <text x="930" y="126" fill="#C8DCF6" font-size="18" font-family="JetBrains Mono, Consolas, monospace">raw files</text>
+    <text x="930" y="154" fill="#60A5FA" font-size="18" font-family="JetBrains Mono, Consolas, monospace">  └─ ingest_kth.py</text>
+    <text x="930" y="182" fill="#34D399" font-size="18" font-family="JetBrains Mono, Consolas, monospace">      └─ sql schema</text>
+    <text x="930" y="210" fill="#F59E0B" font-size="18" font-family="JetBrains Mono, Consolas, monospace">          └─ ml_pipeline.py</text>
+  </g>
+
+  <text x="74" y="590" fill="#94A3B8" font-size="18" font-family="Inter, Segoe UI, Arial, sans-serif">
+    Repository: sql-tbl-dns
+  </text>
+</svg>
