@@ -87,11 +87,11 @@ This makes the project useful as a portfolio piece for SQL, data engineering, an
 
 <p align="center">
   <img src="./docs/assets/figures/fig01_mean_velocity.png" width="48%" alt="Mean velocity profiles" />
-  <img src="./docs/assets/figures/fig09_vorticity.png" width="48%" alt="vorticity" />
+  <img src="./docs/assets/figures/fig09_vorticity.png" width="96%" alt="vorticity" />
 </p>
 <p align="center">
   <img src="./docs/assets/figures/fig10_3d_surface.png" width="48%" alt="3D surface" />
-  <img src="./docs/assets/figures/fig11_region_classification.png" width="48%" alt="Boundary-layer region classification" />
+  <img src="./docs/assets/figures/fig11_region_classification.png" width="96%" alt="Boundary-layer region classification" />
 </p>
 
 These figures are generated directly from the pipeline after ingestion, feature engineering, and model execution. The README gallery is intentionally curated; the full figure set can be reproduced locally.
