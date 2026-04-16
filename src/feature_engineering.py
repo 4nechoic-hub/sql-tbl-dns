@@ -2,7 +2,7 @@
 SQL-based feature engineering for KTH DNS boundary layer data.
 
 Extracts ML features entirely via SQL queries — Python only orchestrates
-the query execution and receives clean DataFrames.
+query execution and receives clean DataFrames.
 """
 
 import logging
@@ -10,6 +10,7 @@ import pandas as pd
 from sqlalchemy import text
 
 logger = logging.getLogger(__name__)
+
 
 
 def compute_derived_features(engine) -> pd.DataFrame:
@@ -93,28 +94,42 @@ def compute_derived_features(engine) -> pd.DataFrame:
     ORDER BY bs.re_theta
     """
     df = pd.read_sql(sql, engine)
-    logger.info(f"Extracted {len(df)} feature vectors with {len(df.columns)} columns")
+    logger.info("Extracted %s feature vectors with %s columns", len(df), len(df.columns))
 
     # Also store in derived_features table
     with engine.begin() as conn:
         conn.execute(text("DELETE FROM derived_features"))
-    df_store = df[["condition_id", "re_theta", "tke_peak", "tke_peak_yplus",
-                    "u_rms_peak", "u_rms_peak_yplus", "production_peak",
-                    "dissipation_wall", "shape_factor",
-                    "cf", "re_tau"]].copy()
+    df_store = df[[
+        "condition_id",
+        "re_theta",
+        "tke_peak",
+        "tke_peak_yplus",
+        "u_rms_peak",
+        "u_rms_peak_yplus",
+        "production_peak",
+        "dissipation_wall",
+        "shape_factor",
+        "cf",
+        "re_tau",
+    ]].copy()
     df_store["anisotropy_ratio_peak"] = df["anisotropy_ratio"]
     df_store.to_sql("derived_features", engine, if_exists="append", index=False)
 
     return df
 
 
+
 def get_profile_features_per_point(engine) -> pd.DataFrame:
     """
     Extract per-point features for boundary layer region classification.
-    Each row is one (Re_theta, y+) point with features and region label.
+
+    Each row is one (condition, y+) point with features and a surrogate
+    boundary-layer region label. The stable ``condition_id`` column is
+    included so ML evaluation can hold out entire Reynolds-number cases.
     """
     sql = """
     SELECT
+        sc.condition_id,
         sc.re_theta,
         sc.re_tau,
         vp.y_plus,
