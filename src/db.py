@@ -5,9 +5,11 @@ Provides engine creation, session management, and schema initialisation
 for both PostgreSQL and SQLite backends.
 """
 
-import os
+from __future__ import annotations
+
 import logging
 from contextlib import contextmanager
+from pathlib import Path
 
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
@@ -16,84 +18,72 @@ from src.config import DatabaseConfig
 
 logger = logging.getLogger(__name__)
 
+REPO_ROOT = Path(__file__).resolve().parent.parent
+SCHEMA_DIR = REPO_ROOT / "sql" / "schema"
+SCHEMA_PATHS = {
+    "sqlite": SCHEMA_DIR / "schema_sqlite.sql",
+    "postgresql": SCHEMA_DIR / "schema_postgres.sql",
+    "postgres": SCHEMA_DIR / "schema_postgres.sql",
+}
 
-def get_engine(config: DatabaseConfig = None):
-    """Create SQLAlchemy engine from configuration."""
+
+def get_engine(config: DatabaseConfig | None = None):
+    """Create a SQLAlchemy engine from configuration."""
     if config is None:
         config = DatabaseConfig.from_env()
 
     engine = create_engine(
         config.connection_string,
         echo=False,
-        pool_pre_ping=True if config.backend == "postgresql" else False,
+        pool_pre_ping=(config.backend == "postgresql"),
     )
-    logger.info(f"Database engine created: {config.backend}")
+    logger.info("Database engine created: %s", config.backend)
     return engine
 
 
-def init_schema(engine, schema_path: str = "sql/schema/01_create_tables.sql"):
+def get_default_schema_path(backend_name: str) -> Path:
+    """Return the default schema file for a backend."""
+    if backend_name not in SCHEMA_PATHS:
+        supported = ", ".join(sorted(SCHEMA_PATHS))
+        raise ValueError(
+            f"Unsupported backend '{backend_name}'. Supported backends: {supported}."
+        )
+    return SCHEMA_PATHS[backend_name]
+
+
+def init_schema(engine, schema_path: str | Path | None = None):
     """
-    Initialise database schema from SQL file.
+    Initialise database schema from the backend-specific SQL file.
 
-    For SQLite, adapts PostgreSQL-specific syntax (SERIAL, GENERATED ALWAYS AS)
-    to SQLite-compatible equivalents.
+    When ``schema_path`` is omitted, the function picks the matching file from
+    ``sql/schema/schema_sqlite.sql`` or ``sql/schema/schema_postgres.sql``.
     """
-    if not os.path.exists(schema_path):
-        logger.warning(f"Schema file not found: {schema_path}")
-        return
+    backend_name = engine.url.get_backend_name()
+    resolved_schema = Path(schema_path) if schema_path else get_default_schema_path(backend_name)
 
-    with open(schema_path, "r") as f:
-        schema_sql = f.read()
+    if not resolved_schema.exists():
+        raise FileNotFoundError(f"Schema file not found: {resolved_schema}")
 
-    backend = engine.url.get_backend_name()
-
-    if backend == "sqlite":
-        schema_sql = _adapt_sql_for_sqlite(schema_sql)
-
-    # Execute each statement separately
-    statements = [s.strip() for s in schema_sql.split(";") if s.strip()]
+    schema_sql = resolved_schema.read_text(encoding="utf-8")
+    statements = [statement.strip() for statement in schema_sql.split(";") if statement.strip()]
 
     with engine.begin() as conn:
-        for stmt in statements:
-            # Skip comments-only blocks
-            lines = [l for l in stmt.split("\n") if not l.strip().startswith("--")]
-            clean = "\n".join(lines).strip()
-            if clean:
-                try:
-                    conn.execute(text(clean))
-                except Exception as e:
-                    # Skip errors for IF NOT EXISTS / IF EXISTS
-                    if "already exists" in str(e).lower():
-                        continue
-                    logger.warning(f"Schema statement skipped: {e}")
+        for statement in statements:
+            clean_statement = _strip_comment_lines(statement)
+            if not clean_statement:
+                continue
+            conn.execute(text(clean_statement))
 
-    logger.info("Database schema initialised")
+    try:
+        schema_label = resolved_schema.relative_to(REPO_ROOT)
+    except ValueError:
+        schema_label = resolved_schema
 
-
-def _adapt_sql_for_sqlite(sql: str) -> str:
-    """Adapt PostgreSQL SQL to SQLite-compatible syntax."""
-    import re
-
-    # Replace SERIAL with INTEGER (SQLite auto-increments INTEGER PRIMARY KEY)
-    sql = sql.replace("SERIAL PRIMARY KEY", "INTEGER PRIMARY KEY AUTOINCREMENT")
-    sql = re.sub(r"\bSERIAL\b", "INTEGER", sql)
-
-    # Replace DOUBLE PRECISION with REAL
-    sql = sql.replace("DOUBLE PRECISION", "REAL")
-
-    # Remove GENERATED ALWAYS AS ... STORED columns
-    sql = re.sub(
-        r",\s*velocity_mag\s+\w+\s+GENERATED ALWAYS AS\s*\([^)]+\)\s*STORED",
-        "",
-        sql,
+    logger.info(
+        "Database schema initialised for %s using %s",
+        backend_name,
+        schema_label,
     )
-
-    # CURRENT_TIMESTAMP works natively in SQLite — leave as is
-
-    # Remove inline SQL comments that break SQLite parsing
-    sql = re.sub(r"--[^\n]*", "", sql)
-
-    return sql
 
 
 @contextmanager
@@ -102,8 +92,7 @@ def get_session(engine=None):
     if engine is None:
         engine = get_engine()
 
-    Session = sessionmaker(bind=engine)
-    session = Session()
+    session = sessionmaker(bind=engine)()
     try:
         yield session
         session.commit()
@@ -114,21 +103,24 @@ def get_session(engine=None):
         session.close()
 
 
-def execute_sql_file(engine, filepath: str) -> list:
+def execute_sql_file(engine, filepath: str | Path) -> list:
     """Execute a SQL file and return results from the last SELECT statement."""
-    with open(filepath, "r") as f:
-        sql_content = f.read()
-
+    sql_content = Path(filepath).read_text(encoding="utf-8")
     results = []
-    statements = [s.strip() for s in sql_content.split(";") if s.strip()]
 
     with engine.begin() as conn:
-        for stmt in statements:
-            lines = [l for l in stmt.split("\n") if not l.strip().startswith("--")]
-            clean = "\n".join(lines).strip()
-            if clean:
-                result = conn.execute(text(clean))
-                if result.returns_rows:
-                    results = result.fetchall()
+        for statement in [part.strip() for part in sql_content.split(";") if part.strip()]:
+            clean_statement = _strip_comment_lines(statement)
+            if not clean_statement:
+                continue
+            result = conn.execute(text(clean_statement))
+            if result.returns_rows:
+                results = result.fetchall()
 
     return results
+
+
+def _strip_comment_lines(statement: str) -> str:
+    """Remove full-line SQL comments and surrounding whitespace."""
+    lines = [line for line in statement.splitlines() if not line.strip().startswith("--")]
+    return "\n".join(lines).strip()

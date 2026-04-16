@@ -7,7 +7,8 @@ on:
     branches: [main]
 
 jobs:
-  test:
+  sqlite-tests:
+    name: SQLite tests (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -25,7 +26,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install pytest
 
       - name: Run tests (SQLite backend)
         run: |
@@ -38,3 +38,89 @@ jobs:
       - name: Run ML pipeline
         run: |
           python src/ml_pipeline.py --backend sqlite
+
+  postgres-smoke:
+    name: PostgreSQL smoke test
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: tbl_analytics
+          POSTGRES_USER: tbl_user
+          POSTGRES_PASSWORD: tbl_pass
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U tbl_user -d tbl_analytics"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DB_BACKEND: postgresql
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: tbl_analytics
+      POSTGRES_USER: tbl_user
+      POSTGRES_PASSWORD: tbl_pass
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run ingestion pipeline (PostgreSQL)
+        run: |
+          python src/ingest_kth.py --data-dir data/raw/kth_dns --backend postgresql
+
+      - name: Verify PostgreSQL row counts
+        run: |
+          python - <<'PY'
+          import os
+          import sys
+          from sqlalchemy import text
+
+          sys.path.insert(0, os.getcwd())
+
+          from src.config import DatabaseConfig
+          from src.db import get_engine
+
+          engine = get_engine(DatabaseConfig.from_env(backend="postgresql"))
+          expected = {
+              "simulation_conditions": 10,
+              "velocity_profiles": 5130,
+              "tke_budgets": 5130,
+              "reynolds_stress_budgets": 20520,
+          }
+
+          with engine.connect() as conn:
+              observed = {
+                  table: conn.execute(text(f"SELECT COUNT(*) FROM {table}")).scalar()
+                  for table in expected
+              }
+
+          assert observed == expected, f"Unexpected PostgreSQL row counts: {observed}"
+          print(observed)
+          PY
+
+      - name: Run ML pipeline (PostgreSQL)
+        run: |
+          python src/ml_pipeline.py --backend postgresql
+
+      - name: Run figure generation (PostgreSQL)
+        run: |
+          python src/generate_figures.py --backend postgresql --output-dir data/processed_postgres
+
+      - name: Verify generated figures
+        run: |
+          test -f data/processed_postgres/fig01_mean_velocity.png
+          test -f data/processed_postgres/fig10_3d_surface.png

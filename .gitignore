@@ -13,3 +13,5 @@ data/processed/*.png
 .DS_Store
 Thumbs.db
 postgres_data/
+
+data/processed_postgres/

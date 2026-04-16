@@ -28,6 +28,13 @@ from src.db import get_engine, init_schema
 logger = logging.getLogger(__name__)
 
 
+def _to_native_float(value):
+    """Return a plain Python float for SQL parameter binding."""
+    if value is None:
+        return None
+    return float(value)
+
+
 # ---------------------------------------------------------------------------
 # File parsers
 # ---------------------------------------------------------------------------
@@ -172,7 +179,7 @@ def ingest_kth_data(engine, data_dir: str):
 
         # Compute u_tau from cf: u_tau = U_inf * sqrt(cf/2)
         # In inner scaling, U_inf = Re_tau / (Re_theta * sqrt(cf/2))
-        u_tau = np.sqrt(cf / 2.0) if cf else None
+        u_tau = _to_native_float(np.sqrt(cf / 2.0)) if cf is not None else None
 
         # Insert simulation condition
         with engine.begin() as conn:
@@ -181,11 +188,11 @@ def ingest_kth_data(engine, data_dir: str):
                 (re_theta, re_delta_star, re_tau, shape_factor, cf, u_tau, source_file)
                 VALUES (:rt, :rds, :rtau, :h, :cf, :utau, :src)
             """), {
-                "rt": re_theta,
-                "rds": header.get("re_delta_star"),
-                "rtau": re_tau,
-                "h": header.get("shape_factor"),
-                "cf": cf,
+                "rt": _to_native_float(re_theta),
+                "rds": _to_native_float(header.get("re_delta_star")),
+                "rtau": _to_native_float(re_tau),
+                "h": _to_native_float(header.get("shape_factor")),
+                "cf": _to_native_float(cf),
                 "utau": u_tau,
                 "src": basename,
             })

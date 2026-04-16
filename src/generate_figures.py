@@ -5,8 +5,10 @@ Generates figures showing the full signal processing and turbulence
 analysis pipeline using real DNS data from Schlatter & Örlü (2010).
 """
 
+import argparse
 import os
 import sys
+from pathlib import Path
 import numpy as np
 import pandas as pd
 import matplotlib
@@ -30,15 +32,24 @@ plt.rcParams.update({
     "axes.linewidth": 0.8,
 })
 
-OUTPUT = "data/processed"
+REPO_ROOT = Path(__file__).resolve().parent.parent
+OUTPUT = REPO_ROOT / "data" / "processed"
 os.makedirs(OUTPUT, exist_ok=True)
 
 RE_THETAS = [677, 1007, 1421, 2001, 2537, 3032, 3274, 3626, 3969, 4061]
 CMAP = plt.cm.viridis
 RE_COLOURS = {re: CMAP(i / (len(RE_THETAS) - 1)) for i, re in enumerate(RE_THETAS)}
 
-def get_engine_db():
-    config = DatabaseConfig(backend="sqlite", sqlite_path="data/tbl_analytics.db")
+def _resolve_path(path_like: str) -> str:
+    path = Path(path_like).expanduser()
+    if not path.is_absolute():
+        path = REPO_ROOT / path
+    return str(path)
+
+def get_engine_db(backend: str = "sqlite", db_path: str | None = None):
+    config = DatabaseConfig.from_env(backend=backend)
+    if backend == "sqlite":
+        config.sqlite_path = _resolve_path(db_path or config.sqlite_path)
     return get_engine(config)
 
 def get_re_colour(re_theta):
@@ -246,9 +257,30 @@ def fig10_3d_surface(engine):
     plt.tight_layout(); fig.savefig(f"{OUTPUT}/fig10_3d_surface.png"); plt.close(fig)
     print("  [10] 3D surface")
 
-if __name__ == "__main__":
-    print("Generating figures from KTH DNS data...")
-    engine = get_engine_db()
+def main():
+    parser = argparse.ArgumentParser(description="Generate publication-quality figures from KTH DNS data")
+    parser.add_argument("--backend", choices=["sqlite", "postgresql"], default="sqlite")
+    parser.add_argument(
+        "--db-path",
+        default=None,
+        help="SQLite database path override (used only when --backend sqlite)",
+    )
+    parser.add_argument(
+        "--output-dir",
+        default=str(REPO_ROOT / "data" / "processed"),
+        help="Directory where PNG figures will be written",
+    )
+    args = parser.parse_args()
+
+    if args.backend != "sqlite" and args.db_path is not None:
+        parser.error("--db-path is only valid when --backend sqlite")
+
+    global OUTPUT
+    OUTPUT = _resolve_path(args.output_dir)
+    os.makedirs(OUTPUT, exist_ok=True)
+
+    print(f"Generating figures from KTH DNS data using {args.backend}...")
+    engine = get_engine_db(backend=args.backend, db_path=args.db_path)
     fig01_mean_velocity(engine)
     fig02_reynolds_stresses(engine)
     fig03_tke_profiles(engine)
@@ -263,3 +295,7 @@ if __name__ == "__main__":
     for f in sorted(os.listdir(OUTPUT)):
         if f.startswith("fig") and f.endswith(".png"):
             print(f"  {f:40s} {os.path.getsize(f'{OUTPUT}/{f}')/1024:6.0f} KB")
+
+
+if __name__ == "__main__":
+    main()
