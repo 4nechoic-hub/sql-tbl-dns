@@ -77,8 +77,8 @@ flowchart LR
 
 The pipeline currently includes three analysis tasks:
 
-- boundary-layer region classification with a Random Forest classifier
-- `Re_tau` regression with gradient boosting and leave-one-out evaluation
+- boundary-layer region classification with a Random Forest pipeline evaluated with leave-one-condition-out validation
+- `Re_tau` regression with gradient boosting evaluated with leave-one-condition-out validation
 - anomaly detection with Isolation Forest and Local Outlier Factor
 
 This makes the project useful as a portfolio piece for SQL, data engineering, analytics engineering, scientific Python, and applied machine learning roles.
@@ -86,12 +86,12 @@ This makes the project useful as a portfolio piece for SQL, data engineering, an
 ## Selected outputs
 
 <p align="center">
-  <img src="./docs/assets/figures/fig01_mean_velocity.png" width="50%" alt="Mean velocity profiles" />
-  <img src="./docs/assets/figures/fig10_3d_surface.png" width="50%" alt="TKE budget" />
+  <img src="./docs/assets/figures/fig01_mean_velocity.png" width="48%" alt="Mean velocity profiles" />
+  <img src="./docs/assets/figures/fig04_tke_budget.png" width="48%" alt="TKE budget" />
 </p>
 <p align="center">
-  <img src="./docs/assets/figures/fig09_vorticity.png" width="100%" alt="3D surface" />
-  <img src="./docs/assets/figures/fig11_region_classification.png" width="100%" alt="Boundary-layer region classification" />
+  <img src="./docs/assets/figures/fig10_3d_surface.png" width="48%" alt="3D surface" />
+  <img src="./docs/assets/figures/fig11_region_classification.png" width="48%" alt="Boundary-layer region classification" />
 </p>
 
 These figures are generated directly from the pipeline after ingestion, feature engineering, and model execution. The README gallery is intentionally curated; the full figure set can be reproduced locally.
@@ -159,7 +159,7 @@ cp .env.example .env
 docker compose up -d postgres
 
 python src/ingest_kth.py --data-dir data/raw/kth_dns --backend postgresql
-python src/ml_pipeline.py --backend postgresql
+python src/ml_pipeline.py --backend postgresql --output-dir data/processed_postgres
 python src/generate_figures.py --backend postgresql --output-dir data/processed_postgres
 ```
 
@@ -171,6 +171,10 @@ pytest tests/ -v --tb=short
 ```
 
 GitHub Actions runs a SQLite test matrix and a PostgreSQL smoke test on pushes and pull requests to `main`.
+
+## CI artifacts
+
+The PostgreSQL smoke test uploads the generated figure set as a workflow artifact named `postgres-figures`. After a successful run, open **Actions**, select the workflow run, and download the artifact from the **Artifacts** section.
 
 ## Dataset provenance and attribution
 
@@ -188,10 +192,10 @@ See `DATA_PROVENANCE.md` for the dataset note in repository form.
 
 ## Current limitations
 
-- the `Re_tau` regression task is intentionally small-sample because the dataset contains 10 Reynolds-number conditions
+- evaluation is now group-aware by Reynolds-number condition, but the dataset still contains only 10 conditions for supervised learning
 - the boundary-layer region labels are rule-based surrogate labels derived from wall-normal thresholds rather than external annotations
-- the CI workflow is a smoke test for correctness and reproducibility, not a benchmarking suite
-- the README gallery shows selected outputs only; generated figures are not versioned in full by default
+- anomaly detection is exploratory and unsupervised rather than benchmarked against labeled anomalies
+- the README gallery shows selected outputs only; the full figure set is reproduced locally and uploaded from CI as an artifact
 
 ## References
 
