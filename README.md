@@ -1,135 +1,124 @@
 <p align="center">
-  <img src="docs/assets/hero-banner.svg" alt="SQL-first data engineering and machine learning pipeline for KTH DNS turbulent boundary layer data" width="100%" />
+  <img src="./hero-banner.svg" alt="SQL-first data engineering and machine learning pipeline for KTH DNS turbulent boundary layer data" width="100%" />
 </p>
 
 <p align="center">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green.svg" alt="MIT License"></a>
-  <img src="https://img.shields.io/badge/python-3.10%2B-blue.svg" alt="Python 3.10+">
-  <img src="https://img.shields.io/badge/database-PostgreSQL%20%7C%20SQLite-0a7ea4.svg" alt="PostgreSQL | SQLite">
-  <img src="https://img.shields.io/badge/CI-GitHub%20Actions-black.svg" alt="CI">
-  <img src="https://img.shields.io/badge/data-KTH%20DNS-orange.svg" alt="KTH DNS">
-  <img src="https://img.shields.io/badge/focus-SQL%20Feature%20Engineering-purple.svg" alt="SQL Feature Engineering">
+  <a href="https://github.com/4nechoic-hub/sql-tbl-dns/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/4nechoic-hub/sql-tbl-dns/actions/workflows/ci.yml/badge.svg" /></a>
+  <img alt="Python" src="https://img.shields.io/badge/Python-3.10%2B-blue" />
+  <img alt="Databases" src="https://img.shields.io/badge/Databases-PostgreSQL%20%7C%20SQLite-informational" />
+  <img alt="License" src="https://img.shields.io/badge/License-MIT-green" />
 </p>
 
 # Turbulent Boundary Layer SQL Analytics Pipeline
 
-A SQL-first data engineering and machine learning project built on real direct numerical simulation data from KTH Royal Institute of Technology. The pipeline ingests turbulent boundary layer profile files, loads them into a relational database, engineers physically meaningful features in SQL, trains machine learning models, and writes model outputs back to the database.
+A SQL-first data engineering and machine learning pipeline built on real KTH direct numerical simulation (DNS) data for a turbulent zero-pressure-gradient boundary layer.
 
-## Why this project matters
+## Overview
 
-Most portfolio projects stop at a notebook. This project is intentionally structured as a reproducible pipeline that shows:
+This project ingests raw `.prof` files from the KTH Boundary Layer dataset into a relational database, engineers turbulence features with SQL, trains machine learning models, and generates analysis figures.
 
-- data ingestion from raw scientific files into a relational database
-- relational schema design and SQL-based feature engineering
-- machine learning on engineered turbulence features
-- test coverage and CI automation
-- figure generation and results reporting
+It is designed to demonstrate more than notebook-based analysis:
 
-This makes it a stronger signal for data engineering, analytics engineering, scientific Python, and applied machine learning roles.
+- ingestion of real scientific data into a relational database
+- relational schema design for simulation metadata, velocity profiles, and turbulence budgets
+- SQL-based feature engineering for downstream ML tasks
+- supervised and unsupervised machine learning on engineered features
+- reproducible testing and CI automation
 
-## What I built vs. what I used
+## What I built
 
-This repository is strongest when it is framed honestly:
+The upstream DNS profile and budget files are external research data.
 
-- **External research data**: the raw DNS profile and budget files come from the KTH Boundary Layer Data portal.
-- **Original portfolio work**: the ingestion code, schema design, SQL feature engineering, ML pipeline, reporting workflow, tests, and CI setup are my implementation.
-- **Portfolio objective**: demonstrate end-to-end SQL, data engineering, and applied ML on a real scientific dataset rather than claim ownership of the underlying simulation campaign.
+My original work in this repository includes:
 
-That framing makes the project more credible to technical reviewers.
+- the ingestion pipeline in `src/ingest_kth.py`
+- the database utilities and schema initialization flow in `src/db.py`
+- SQL-first feature engineering in `src/feature_engineering.py`
+- the ML workflow in `src/ml_pipeline.py`
+- reporting and figure generation in `src/generate_figures.py`
+- automated tests and CI setup
 
-## Dataset provenance and attribution
+## Why this is a SQL-first project
 
-This project uses the **KTH Boundary Layer Data** portal maintained by Philipp Schlatter and collaborators.
+SQL is central to this repository, not an afterthought. The database is used to store simulation data, organize turbulence quantities, and compute derived ML-ready features before model training. Python mainly orchestrates ingestion, model execution, and reporting.
 
-For this repository, the relevant upstream source is the **"new DNS Data"** release last updated **2012-05-27**, associated with:
+Core tables include:
 
-> Schlatter, P. and Orlu, R. (2010). *Assessment of direct numerical simulation data of turbulent boundary layers*. Journal of Fluid Mechanics, 659, 116-126. https://doi.org/10.1017/S0022112010003113
+- `simulation_conditions`
+- `velocity_profiles`
+- `tke_budgets`
+- `reynolds_stress_budgets`
+- `derived_features`
+- `predictions`
+- `model_registry`
 
-Upstream dataset notes worth preserving in the repository:
-
-- the data portal states that the directory contains integral quantities and velocity profiles from DNS and LES of a zero-pressure-gradient turbulent boundary layer
-- the portal asks users to include proper references to the original publications
-- the 2012 DNS section lists a resolution of **8192 x 513 x 768** spectral modes
-- the release includes **10 Reynolds-number cases**: Re_theta = 670, 1000, 1410, 2000, 2540, 3030, 3270, 3630, 3970, and 4060
-- the 2012-05-27 update notes the inclusion of **vorticity rms** for all Reynolds numbers
-- upstream contact listed on the portal: **Philipp Schlatter, pschlatt@mech.kth.se**
-
-### Important usage note
-
-The **code in this repository** may be MIT licensed, but the **dataset itself is third-party research data** and should be presented as such. Do not imply that the raw KTH data is relicensed under MIT simply because the repository code is.
-
-A clean way to handle this is:
-
-- keep `LICENSE` for your code
-- add `DATA_PROVENANCE.md` for the dataset source and attribution requirements
-- mention the original paper and data portal in the README and GitHub About text
-
-## Dataset summary
-
-The pipeline ingests wall-normal velocity profiles and turbulence-budget data across 10 Reynolds numbers and stores:
-
-- simulation metadata
-- velocity statistics
-- TKE budget terms
-- Reynolds-stress budget terms
-- SQL-derived ML features
-- model predictions and evaluation metadata
-
-## Architecture
+## Pipeline architecture
 
 ```mermaid
-flowchart TD
-    A[Raw KTH DNS .prof files] --> B[Python ingestion layer]
-    B --> C[(Relational database)]
-    C --> C1[simulation_conditions]
-    C --> C2[velocity_profiles]
-    C --> C3[tke_budgets]
-    C --> C4[reynolds_stress_budgets]
-    C --> D[SQL feature engineering]
-    D --> D1[derived_features]
-    D --> E[ML training and evaluation]
-    E --> E1[region classification]
-    E --> E2[Re_tau regression]
-    E --> E3[anomaly detection]
-    E --> F[predictions + model_registry]
-    F --> G[figures and portfolio-ready outputs]
+flowchart LR
+    A[Raw KTH DNS .prof files] --> B[ingest_kth.py]
+    B --> C[(PostgreSQL or SQLite)]
+    C --> D[simulation_conditions]
+    C --> E[velocity_profiles]
+    C --> F[tke_budgets]
+    C --> G[reynolds_stress_budgets]
+    D --> H[feature_engineering.py]
+    E --> H
+    F --> H
+    G --> H
+    H --> I[derived_features]
+    E --> J[ml_pipeline.py]
+    I --> J
+    J --> K[predictions and metrics]
+    J --> L[generate_figures.py]
 ```
 
-## Data model
+## Models and outputs
 
-Core entities:
+The pipeline currently includes three analysis tasks:
 
-- `simulation_conditions`: one row per Reynolds number / simulation condition
-- `velocity_profiles`: wall-normal velocity statistics
-- `tke_budgets`: turbulent kinetic energy budget terms
-- `reynolds_stress_budgets`: Reynolds-stress transport budgets by component
-- `derived_features`: SQL-engineered ML features
-- `predictions`: model outputs written back to the database
-- `model_registry`: training metadata and model metrics
+- boundary-layer region classification with a Random Forest classifier
+- `Re_tau` regression with gradient boosting and leave-one-out evaluation
+- anomaly detection with Isolation Forest and Local Outlier Factor
+
+This makes the project useful as a portfolio piece for SQL, data engineering, analytics engineering, scientific Python, and applied machine learning roles.
 
 ## Repository structure
 
 ```text
 sql-tbl-dns/
-├── .github/workflows/      # CI pipeline
-├── data/raw/kth_dns/       # Raw DNS input files
-├── docs/assets/            # Banner + curated figures for README
+├── .github/workflows/          # CI pipeline
+├── data/raw/kth_dns/           # Raw DNS input files
 ├── sql/
-│   ├── schema/             # DDL
-│   └── queries/            # Exploratory + feature-engineering SQL
+│   ├── queries/                # Exploratory and feature SQL
+│   └── schema/                 # Table creation SQL
 ├── src/
 │   ├── config.py
 │   ├── db.py
-│   ├── ingest_kth.py
 │   ├── feature_engineering.py
-│   ├── ml_pipeline.py
-│   └── generate_figures.py
+│   ├── generate_figures.py
+│   ├── ingest_kth.py
+│   └── ml_pipeline.py
 ├── tests/
-├── CITATION.cff           # Software citation metadata for GitHub
-├── DATA_PROVENANCE.md      # Upstream data attribution and usage notes
+│   └── test_pipeline.py
+├── CITATION.cff
+├── DATA_PROVENANCE.md
 ├── docker-compose.yml
+├── hero-banner.svg
+├── LICENSE
+├── README.md
 └── requirements.txt
 ```
+
+## What to review first
+
+If you are scanning this repository quickly, start here:
+
+1. `src/ingest_kth.py` for parsing and loading the DNS files
+2. `src/feature_engineering.py` for SQL-based feature extraction
+3. `src/ml_pipeline.py` for classification, regression, and anomaly detection
+4. `sql/queries/02_feature_engineering.sql` for standalone SQL work
+5. `.github/workflows/ci.yml` for reproducibility and automated checks
 
 ## Quick start
 
@@ -156,148 +145,38 @@ docker compose up -d
 
 python src/ingest_kth.py --data-dir data/raw/kth_dns --backend postgresql
 python src/ml_pipeline.py --backend postgresql
-
-# current reporting path appears SQLite-oriented; parameterize this next
-python src/generate_figures.py
 ```
 
-## Key results
+> Note: `src/generate_figures.py` currently opens the SQLite database path directly (`data/tbl_analytics.db`), so reporting is aligned with the SQLite path unless that script is updated.
 
-- **Boundary-layer region classification** with a Random Forest model
-- **Re_tau regression** from SQL-derived turbulence features
-- **Unsupervised anomaly detection** with Isolation Forest and Local Outlier Factor
+## Testing
 
-### Important interpretation notes
-
-- The regression task is intentionally small-sample: only 10 Reynolds-number conditions are available.
-- Boundary-layer region labels are rule-based labels constructed in SQL from accepted wall-normal thresholds, so the classifier should be interpreted as learning a surrogate mapping from turbulence statistics to those labels.
-- Anomaly detection is exploratory rather than ground-truth validated.
-- This project demonstrates engineering and analysis workflow quality more than it claims new physical discovery.
-
-These notes make the project more credible to technical reviewers because they clarify what is demonstrated and what is not.
-
-## SQL showcase
-
-This repository is strongest when presented as a **SQL-first analytics project**. Emphasize that feature extraction happens in the database, with Python mainly orchestrating training and reporting.
-
-Examples of techniques used here:
-
-- schema design with constraints and indexes
-- exploratory analysis queries
-- CTE-based feature pipelines
-- window functions such as `LAG`, `LEAD`, `ROW_NUMBER`, and `NTILE`
-- joined analytical queries across multiple turbulence tables
-- derived-feature persistence back into database tables
-
-## Recommended repository additions
-
-To make the project more professional and more transparent, add:
-
-- `DATA_PROVENANCE.md` describing the upstream KTH source, citation, and contact details
-- `CITATION.cff` so GitHub can surface a citation entry for your portfolio project
-- curated figure assets under `docs/assets/`
-- a schema diagram image for non-technical reviewers
-- separate runtime and development dependency files
-- backend-aware figure generation so reporting is not tied to one database path
-
-## Testing and reproducibility
-
-The repository includes automated tests and a GitHub Actions workflow. To make that even stronger for portfolio use, consider the next improvements below:
-
-1. add a PostgreSQL CI job in addition to SQLite
-2. split tests into `unit`, `integration`, and `e2e`
-3. persist run metadata such as `run_id`, git commit, and dataset version
-4. export a small curated set of figures under `docs/assets/` for README display
-
-## Best next upgrades
-
-### 1. Make backend portability real
-
-Right now, SQLite support is the most convincing execution path. To make the PostgreSQL claim equally strong:
-
-- keep separate `schema_postgres.sql` and `schema_sqlite.sql`, or
-- adopt migrations with Alembic, or
-- generate schema through SQLAlchemy models
-
-### 2. Refactor into a package
-
-A more portfolio-ready structure would look like:
-
-```text
-src/tbl_dns/
-├── cli.py
-├── settings.py
-├── db/
-├── ingestion/
-├── features/
-├── models/
-└── reporting/
+```bash
+pytest tests/ -v --tb=short
 ```
 
-This makes the project look like a productized codebase rather than a collection of scripts.
+GitHub Actions runs the CI workflow on pushes and pull requests to `main`.
 
-### 3. Add run metadata tables
+## Dataset provenance and attribution
 
-Introduce:
+This repository uses data from the KTH Boundary Layer Data portal. The relevant upstream DNS release was last updated on 2012-05-27 and is associated with:
 
-- `pipeline_runs`
-- `validation_results`
-- `artifacts`
+> Schlatter, P. and Orlu, R. (2010). *Assessment of direct numerical simulation data of turbulent boundary layers*. Journal of Fluid Mechanics, 659, 116-126. https://doi.org/10.1017/S0022112010003113
 
-Then attach `run_id` to `derived_features`, `predictions`, and `model_registry` so you preserve lineage instead of overwriting prior runs.
+The upstream data description notes that the directory contains integral quantities and velocity profiles for a turbulent zero-pressure-gradient boundary layer, and asks users to include proper references to the original publications.
 
-### 4. Improve hiring-manager readability
+For this repository, the DNS files span 10 Reynolds-number cases from `Re_theta = 670` to `Re_theta = 4060`.
 
-Add these high-signal README sections near the top:
+Please keep the dataset attribution with the original publication. The repository code is MIT licensed, but the upstream research data should retain its original citation and attribution requirements.
 
-- **What problem this solves**
-- **Why SQL is central here**
-- **What I built end to end**
-- **What data is original vs. external**
-- **What a reviewer should look at first**
+See `DATA_PROVENANCE.md` for the dataset note in repository form.
 
-### 5. Add portfolio visuals
+## Current limitations
 
-Pick two or three generated figures and copy them into `docs/assets/` so they can be rendered directly in the README:
-
-- region classification confusion matrix
-- Re_tau prediction plot
-- one turbulence profile figure
-
-## Suggested GitHub About metadata
-
-**Description**
-
-> SQL-first data engineering and machine learning pipeline for turbulent boundary layer analysis using KTH DNS profile and budget data.
-
-**Topics**
-
-```text
-sql
-python
-data-engineering
-machine-learning
-feature-engineering
-postgresql
-sqlite
-sqlalchemy
-scikit-learn
-analytics-engineering
-scientific-computing
-research-data-management
-fluid-dynamics
-turbulence
-direct-numerical-simulation
-data-pipeline
-```
-
-## Suggested project pitch
-
-> Built an end-to-end SQL analytics and ML pipeline on real KTH turbulent boundary layer DNS data: ingested raw scientific profile files into PostgreSQL/SQLite, engineered features with SQL window functions and CTEs, trained classification/regression/anomaly models, wrote predictions back to the database, and documented the upstream research data with proper attribution.
-
-## Suggested acknowledgment text
-
-This repository uses turbulent boundary layer profile and budget data made available through the KTH Boundary Layer Data portal. Please cite the original publication by Schlatter and Orlu (2010) when using the upstream data.
+- figure generation currently assumes the SQLite database path
+- the `Re_tau` regression task is small-sample because only 10 Reynolds-number conditions are available
+- the boundary-layer region labels are rule-based labels derived from wall-normal thresholds
+- SQLite is the most direct local execution path today, even though both backends are configured in the project
 
 ## References
 
@@ -306,4 +185,4 @@ This repository uses turbulent boundary layer profile and budget data made avail
 
 ## License
 
-MIT License for repository code. Upstream DNS data should retain its original attribution and citation requirements.
+MIT License for repository code. Upstream DNS data remains subject to its original attribution and citation requirements.
