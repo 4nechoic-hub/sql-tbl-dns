@@ -86,8 +86,8 @@ This makes the project useful as a portfolio piece for SQL, data engineering, an
 ## Selected outputs
 
 <p align="center">
-  <img src="./docs/assets/figures/fig01_mean_velocity.png" width="100%" alt="Mean velocity profiles" />
-  <img src="./docs/assets/figures/fig10_3d_surface.png" width="100%" alt="3D surface" />
+  <img src="./docs/assets/figures/fig01_mean_velocity.png" width="50%" alt="Mean velocity profiles" />
+  <img src="./docs/assets/figures/fig10_3d_surface.png" width="50%" alt="3D surface" />
 </p>
 <p align="center"> 
   <img src="./docs/assets/figures/fig09_vorticity.png" width="100%" alt="vorticity" />
