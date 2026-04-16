@@ -114,7 +114,7 @@ jobs:
 
       - name: Run ML pipeline (PostgreSQL)
         run: |
-          python src/ml_pipeline.py --backend postgresql
+          python src/ml_pipeline.py --backend postgresql --output-dir data/processed_postgres
 
       - name: Run figure generation (PostgreSQL)
         run: |
@@ -124,3 +124,6 @@ jobs:
         run: |
           test -f data/processed_postgres/fig01_mean_velocity.png
           test -f data/processed_postgres/fig10_3d_surface.png
+          test -f data/processed_postgres/fig11_region_classification.png
+          test -f data/processed_postgres/fig12_retau_prediction.png
+          test -f data/processed_postgres/fig13_anomaly_detection.png

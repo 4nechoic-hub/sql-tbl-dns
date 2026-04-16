@@ -15,6 +15,7 @@ import logging
 import os
 import sys
 from datetime import datetime
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -280,7 +281,13 @@ def write_results_to_db(engine, region_results, retau_results, anomaly_results):
 # Generate ML figures
 # ---------------------------------------------------------------------------
 
-def generate_ml_figures(region_results, retau_results, anomaly_results):
+def default_ml_output_dir(backend: str) -> Path:
+    """Return the default ML figure output directory for a backend."""
+    return Path("data/processed_postgres" if backend == "postgresql" else "data/processed")
+
+
+
+def generate_ml_figures(region_results, retau_results, anomaly_results, output_dir: str):
     """Generate ML-specific figures."""
     import matplotlib
     matplotlib.use("Agg")
@@ -292,8 +299,8 @@ def generate_ml_figures(region_results, retau_results, anomaly_results):
         "savefig.dpi": 300, "savefig.bbox": "tight",
         "axes.grid": True, "grid.alpha": 0.25,
     })
-    OUTPUT = "data/processed"
-    os.makedirs(OUTPUT, exist_ok=True)
+    output_path = Path(output_dir)
+    output_path.mkdir(parents=True, exist_ok=True)
 
     # Fig 11: Region classification confusion matrix + importance
     fig = plt.figure(figsize=(14, 5.5))
@@ -318,7 +325,7 @@ def generate_ml_figures(region_results, retau_results, anomaly_results):
         ax2.text(imp.values[i]+0.005, len(imp)+i, f"{imp.values[i]:.3f}", va="center", fontsize=8, color="0.3")
 
     plt.tight_layout()
-    fig.savefig(f"{OUTPUT}/fig11_region_classification.png")
+    fig.savefig(output_path / "fig11_region_classification.png")
     plt.close(fig)
     print("  [11] Region classification")
 
@@ -346,7 +353,7 @@ def generate_ml_figures(region_results, retau_results, anomaly_results):
 
     plt.suptitle("$Re_\\tau$ Regression from SQL-Engineered Features", fontsize=14, y=1.01)
     plt.tight_layout()
-    fig.savefig(f"{OUTPUT}/fig12_retau_prediction.png")
+    fig.savefig(output_path / "fig12_retau_prediction.png")
     plt.close(fig)
     print("  [12] Re_tau prediction")
 
@@ -383,9 +390,10 @@ def generate_ml_figures(region_results, retau_results, anomaly_results):
 
     plt.suptitle("Anomaly Detection on DNS Profile Data", fontsize=14, y=1.01)
     plt.tight_layout()
-    fig.savefig(f"{OUTPUT}/fig13_anomaly_detection.png")
+    fig.savefig(output_path / "fig13_anomaly_detection.png")
     plt.close(fig)
     print("  [13] Anomaly detection")
+    logger.info(f"ML figures saved to {output_path.resolve()}")
 
 
 # ---------------------------------------------------------------------------
@@ -395,12 +403,21 @@ def generate_ml_figures(region_results, retau_results, anomaly_results):
 def main():
     parser = argparse.ArgumentParser(description="ML pipeline for KTH DNS data")
     parser.add_argument("--backend", choices=["postgresql", "sqlite"], default="sqlite")
+    parser.add_argument(
+        "--output-dir",
+        default=None,
+        help=(
+            "Directory for ML figures. Defaults to data/processed for sqlite "
+            "and data/processed_postgres for postgresql."
+        ),
+    )
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
     config = DatabaseConfig.from_env(backend=args.backend)
     engine = get_engine(config)
+    output_dir = Path(args.output_dir) if args.output_dir else default_ml_output_dir(args.backend)
 
     logger.info("=" * 60)
     logger.info("Task 1: Boundary Layer Region Classification")
@@ -427,13 +444,14 @@ def main():
     logger.info("=" * 60)
     logger.info("Generating ML figures")
     logger.info("=" * 60)
-    generate_ml_figures(region_results, retau_results, anomaly_results)
+    generate_ml_figures(region_results, retau_results, anomaly_results, output_dir=str(output_dir))
 
     logger.info("=" * 60)
     logger.info("Pipeline complete!")
     logger.info(f"  Region classifier accuracy: {region_results['metrics']['accuracy']:.3f}")
     logger.info(f"  Re_tau R²: {retau_results['metrics']['r2']:.3f}")
     logger.info(f"  Consensus anomalies: {anomaly_results['n_anomalies']['consensus']}")
+    logger.info(f"  ML figures output: {output_dir.resolve()}")
     logger.info("=" * 60)
 
 
