@@ -86,15 +86,12 @@ This makes the project useful as a portfolio piece for SQL, data engineering, an
 ## Selected outputs
 
 <p align="center">
-  <img src="./docs/assets/figures/fig01_mean_velocity.png" width="50%" alt="Mean velocity profiles" />
-  <img src="./docs/assets/figures/fig10_3d_surface.png" width="50%" alt="3D surface" />
-</p>
-<p align="center"> 
-  <img src="./docs/assets/figures/fig09_vorticity.png" width="100%" alt="vorticity" />
-  <img src="./docs/assets/figures/fig11_region_classification.png" width="100%" alt="Boundary-layer region classification" />
+  <img src="./docs/assets/figures/fig01_mean_velocity.png" width="32%" alt="Mean velocity profiles" />
+  <img src="./docs/assets/figures/fig04_tke_budget.png" width="32%" alt="TKE budget" />
+  <img src="./docs/assets/figures/fig10_3d_surface.png" width="32%" alt="3D surface" />
 </p>
 
-These figures are generated directly from the pipeline after ingestion, feature engineering, and model execution. The README gallery is intentionally curated; the full figure set can be reproduced locally.
+These figures are generated directly from the pipeline after ingestion, feature engineering, and model execution. The README gallery is intentionally small; the full figure set can be reproduced locally.
 
 ## Repository structure
 
@@ -121,7 +118,8 @@ sql-tbl-dns/
 ├── hero-banner.svg
 ├── LICENSE
 ├── README.md
-└── requirements.txt
+├── requirements.txt
+└── requirements-dev.txt
 ```
 
 ## What to review first
@@ -147,7 +145,7 @@ source .venv/bin/activate
 pip install -r requirements.txt
 
 python src/ingest_kth.py --data-dir data/raw/kth_dns --backend sqlite
-python src/ml_pipeline.py --backend postgresql --output-dir data/processed_postgres
+python src/ml_pipeline.py --backend sqlite
 python src/generate_figures.py --backend sqlite --db-path data/tbl_analytics.db
 ```
 
@@ -165,6 +163,7 @@ python src/generate_figures.py --backend postgresql --output-dir data/processed_
 ## Testing
 
 ```bash
+pip install -r requirements-dev.txt
 pytest tests/ -v --tb=short
 ```
 
