@@ -86,12 +86,15 @@ This makes the project useful as a portfolio piece for SQL, data engineering, an
 ## Selected outputs
 
 <p align="center">
-  <img src="./docs/assets/figures/fig01_mean_velocity.png" width="32%" alt="Mean velocity profiles" />
-  <img src="./docs/assets/figures/fig04_tke_budget.png" width="32%" alt="TKE budget" />
-  <img src="./docs/assets/figures/fig10_3d_surface.png" width="32%" alt="3D surface" />
+  <img src="./docs/assets/figures/fig01_mean_velocity.png" width="60%" alt="Mean velocity profiles" />
+  <img src="./docs/assets/figures/fig10_3d_surface.png" width="60%" alt="TKE budget" />
+</p>
+<p align="center">
+  <img src="./docs/assets/figures/fig09_vorticity.png" width="60%" alt="3D surface" />
+  <img src="./docs/assets/figures/fig11_region_classification.png" width="60%" alt="Boundary-layer region classification" />
 </p>
 
-These figures are generated directly from the pipeline after ingestion, feature engineering, and model execution. The README gallery is intentionally small; the full figure set can be reproduced locally.
+These figures are generated directly from the pipeline after ingestion, feature engineering, and model execution. The README gallery is intentionally curated; the full figure set can be reproduced locally.
 
 ## Repository structure
 
