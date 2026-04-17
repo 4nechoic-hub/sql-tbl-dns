@@ -233,7 +233,7 @@ def ingest_kth_data(engine, data_dir: str):
         n_tke = conn.execute(text("SELECT COUNT(*) FROM tke_budgets")).scalar()
         n_rs = conn.execute(text("SELECT COUNT(*) FROM reynolds_stress_budgets")).scalar()
 
-    logger.info(f"\nIngestion complete:")
+    logger.info("\nIngestion complete:")
     logger.info(f"  Simulation conditions: {n_cond}")
     logger.info(f"  Velocity profile rows: {n_vel:,}")
     logger.info(f"  TKE budget rows:       {n_tke:,}")
