@@ -6,11 +6,11 @@ query execution and receives clean DataFrames.
 """
 
 import logging
+
 import pandas as pd
 from sqlalchemy import text
 
 logger = logging.getLogger(__name__)
-
 
 
 def compute_derived_features(engine) -> pd.DataFrame:

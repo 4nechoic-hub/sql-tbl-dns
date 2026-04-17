@@ -1,0 +1,17 @@
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+src = ["src", "tests"]
+force-exclude = true
+extend-exclude = [
+  "data/raw",
+  "data/processed",
+  "data/processed_postgres",
+  "docs/assets/figures",
+]
+
+[tool.ruff.lint]
+select = ["E9", "F", "I"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["src"]

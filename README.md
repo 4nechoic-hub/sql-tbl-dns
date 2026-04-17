@@ -86,12 +86,12 @@ This makes the project useful as a portfolio piece for SQL, data engineering, an
 ## Selected outputs
 
 <p align="center">
-  <img src="./docs/assets/figures/fig01_mean_velocity.png" width="48%" alt="Mean velocity profiles" />
-  <img src="./docs/assets/figures/fig04_tke_budget.png" width="48%" alt="TKE budget" />
+  <img src="./docs/assets/figures/fig01_mean_velocity.png" width="60%" alt="Mean velocity profiles" />
+  <img src="./docs/assets/figures/fig10_3d_surface.png" width="60%" alt="3D surface" />
 </p>
 <p align="center">
-  <img src="./docs/assets/figures/fig10_3d_surface.png" width="48%" alt="3D surface" />
-  <img src="./docs/assets/figures/fig11_region_classification.png" width="48%" alt="Boundary-layer region classification" />
+  <img src="./docs/assets/figures/fig09_vorticity.png" width="60%" alt="Vorticity" />
+  <img src="./docs/assets/figures/fig11_region_classification.png" width="60%" alt="Boundary-layer region classification" />
 </p>
 
 These figures are generated directly from the pipeline after ingestion, feature engineering, and model execution. The README gallery is intentionally curated; the full figure set can be reproduced locally.
@@ -100,7 +100,7 @@ These figures are generated directly from the pipeline after ingestion, feature 
 
 ```text
 sql-tbl-dns/
-├── .github/workflows/          # CI pipeline
+├── .github/workflows/          # CI pipeline and lint checks
 ├── data/raw/kth_dns/           # Raw DNS input files
 ├── docs/assets/figures/        # Curated README figure gallery
 ├── sql/
@@ -121,6 +121,8 @@ sql-tbl-dns/
 ├── hero-banner.svg
 ├── LICENSE
 ├── README.md
+├── pyproject.toml              # Ruff configuration
+├── .pre-commit-config.yaml     # Local commit hooks
 ├── requirements.txt
 └── requirements-dev.txt
 ```
@@ -170,7 +172,16 @@ pip install -r requirements-dev.txt
 pytest tests/ -v --tb=short
 ```
 
-GitHub Actions runs a SQLite test matrix and a PostgreSQL smoke test on pushes and pull requests to `main`.
+## Code quality
+
+```bash
+pip install -r requirements-dev.txt
+pre-commit install
+pre-commit run --all-files
+ruff check src tests
+```
+
+GitHub Actions runs a Ruff/pre-commit lint job, a SQLite test matrix, and a PostgreSQL smoke test on pushes and pull requests to `main`.
 
 ## CI artifacts
 

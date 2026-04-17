@@ -4,17 +4,26 @@ Tests for the TBL SQL Analytics Pipeline with KTH DNS data.
 
 import os
 import sys
-import pytest
+
 import numpy as np
 import pandas as pd
+import pytest
 from sqlalchemy import text
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.config import DatabaseConfig
 from src.db import get_engine, init_schema
-from src.ingest_kth import parse_header, parse_velocity_profile, parse_budget_profile, ingest_kth_data
-from src.feature_engineering import compute_derived_features, get_profile_features_per_point
+from src.feature_engineering import (
+    compute_derived_features,
+    get_profile_features_per_point,
+)
+from src.ingest_kth import (
+    ingest_kth_data,
+    parse_budget_profile,
+    parse_header,
+    parse_velocity_profile,
+)
 
 
 @pytest.fixture(scope="module")

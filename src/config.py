@@ -6,6 +6,7 @@ Supports both PostgreSQL (production) and SQLite (demonstration/testing).
 
 import os
 from dataclasses import dataclass
+
 from dotenv import load_dotenv
 
 load_dotenv()
