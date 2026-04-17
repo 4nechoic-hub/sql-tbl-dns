@@ -121,7 +121,7 @@ sql-tbl-dns/
 ├── hero-banner.svg
 ├── LICENSE
 ├── README.md
-├── pyproject.toml              # Ruff configuration
+├── pyproject.toml              # Ruff and mypy configuration
 ├── .pre-commit-config.yaml     # Local commit hooks
 ├── requirements.txt
 └── requirements-dev.txt
@@ -178,10 +178,14 @@ pytest tests/ -v --tb=short
 pip install -r requirements-dev.txt
 pre-commit install
 pre-commit run --all-files
-ruff check src tests
+ruff format --check src/config.py src/db.py src/ingest_kth.py
+mypy src/config.py src/db.py src/ingest_kth.py
 ```
 
-GitHub Actions runs a Ruff/pre-commit lint job, a SQLite test matrix, and a PostgreSQL smoke test on pushes and pull requests to `main`.
+The current type-check scope is intentionally focused on the configuration, database,
+and ingestion modules. GitHub Actions runs Ruff formatting and lint checks through
+`pre-commit`, a dedicated mypy job for those core modules, a SQLite test matrix, and
+a PostgreSQL smoke test on pushes and pull requests to `main`.
 
 ## CI artifacts
 

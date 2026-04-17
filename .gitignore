@@ -13,9 +13,8 @@ data/processed/*.png
 .DS_Store
 Thumbs.db
 postgres_data/
-
 .pytest_cache/
 .ruff_cache/
 .pre-commit-cache/
-
+.mypy_cache/
 data/processed_postgres/
